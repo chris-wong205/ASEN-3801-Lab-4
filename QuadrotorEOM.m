@@ -5,6 +5,21 @@ function var_dot = QuadrotorEOM(t, var, g, m, I, d, km, nu, mu, motor_forces)
   velocity = var(7 : 9);
   angular_velocity = var(10 : 12);
 
+
+  %Aerodynamic Forces and Moments
+
+      AeroForce = (1/m) * (-nu)*velocity*norm(velocity);
+    
+      %AeroForce = [0;0;0];
+
+      % Calculate aerodynamic moments
+      AeroMoment = -mu * angular_velocity .* norm(angular_velocity);
+
+      %AeroMoment = [0;0;0];
+  
+   
+
+
   R = rotation_matrix(phi, theta, psi);
   T = [
     1, sin(phi) * tan(theta), cos(phi) * tan(theta);
@@ -12,27 +27,8 @@ function var_dot = QuadrotorEOM(t, var, g, m, I, d, km, nu, mu, motor_forces)
     0, sin(phi) / cos(theta), cos(phi) / cos(theta);
   ];
 
-  I_B = -I + (2 * diag(diag(I)));
+  I_B = -I + (2 *(diag(I)));
   M = zeros(3);
-
-  %Aerodynamic Forces and Moments
-
-      AeroForce = (1/m) * (-nu)*velocity*norm(velocity);
-    
-      %Aeroforce = [0;0;0];
-
-      % Calculate aerodynamic moments
-      AeroMoment = -mu * angular_velocity .* norm(angular_velocity);
-
-      %AeroMoment = [0;0;0];
-
-
-    
-
-
-
-
-
 
 % Control Moments
 
@@ -58,7 +54,7 @@ Nc = u(4);
  var_dot = [
     R * velocity;
     T * angular_velocity;
-    cross(velocity, angular_velocity) + g * (R' * [0; 0; 1]) + AeroForce +  (1/m) * [0; 0; Zc];
+    -cross(angular_velocity, velocity) + g * (R' * [0; 0; 1]) + AeroForce +  (1/m) * [0; 0; Zc];
     (1/diag(I_B))' .* (- cross(angular_velocity, diag(I_B) .* angular_velocity)) + (1./diag(I_B)) .* AeroMoment + (1./diag(I_B)).*[Lc;Mc;Nc]
 ];
 end

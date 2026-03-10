@@ -29,17 +29,27 @@ f4 = data.rt_motor.signals.values(:,4);
 
 motor_forces = [m*g/4;m*g/4;m*g/4;m*g/4];
 
-% Intial conditions that must be passed in for 1.4
+% Intial conditions that must be passed in for 1.3
 
-y0 = [0,0,0,0,0,0,0,0,0,0,0,1]';
+ %y0 = [0,0,-10,0,0,0,0,5,0,0,0,0]';
+
+%% Intial conditions that must be passed in for 1.4
+
+
+phi0 = asin(0.3676/g); % This number was derived by determing the aero force for the IC of 5 and dividing by mg
+
+vE = 5;
+v0 = vE * cos(phi0);
+w0 = - vE * sin(phi0);
+% Define the initial conditions for the ODE
+y0 = [0, 0, -20, phi0, 0, 0, 0, v0, w0, 0, 0, 0]'; %Starts the AC 20 meters up in the air
+
+f = (m*g/cos(phi0))/4;
+
+motor_forces = [f,f,f,f]';
+
 
 tspan = [0,10];
-
-
-
-
-
-
 %% Inital State Vector
 
  
@@ -47,9 +57,10 @@ tspan = [0,10];
 
 time = t;
 aircraft_state_array = y;
-Zc = (-m*g);
+
 control_input_array = [0;0;0;0];
 fig = [1:6];
 col = 'b-';
 
 PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
