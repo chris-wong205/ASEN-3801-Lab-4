@@ -29,7 +29,7 @@ f4 = data.rt_motor.signals.values(:,4);
 
 %% Intial conditions that must be passed in for 1.3
 % motor_forces = [m*g/4;m*g/4;m*g/4;m*g/4];
-%y0 = [0,0,-10,0,0,0,0,5,0,0,0,0]';
+% y0 = [0,0,-10,0,0,0,0,0,0,0,0,0]';
 
 %% Intial conditions that must be passed in for 1.4
 V_a = 5;
