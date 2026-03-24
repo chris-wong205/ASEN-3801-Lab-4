@@ -34,18 +34,29 @@ f4 = data.rt_motor.signals.values(:,4);
 %% Intial conditions that must be passed in for 1.4
 V_a = 5;
 phi = atan2(V_a^2 * nu, m * g);
-R = rotation_matrix([0, 0, phi]);
 
+R = rotation_matrix([pi / 2, -phi, 0]);
+% R = rotation_matrix([0, 0, phi]);
 v0 = R * [0; 5; 0];
+
 motor_forces = ( (m * g) / (4 * cos(phi)) ) * ones(4, 1);
 
 % Define the initial conditions for the ODE
 tspan = [0,10];
+% y0 = [
+%     zeros(3, 1);
+%     phi;
+%     0;
+%     0;
+%     v0;
+%     zeros(3, 1);
+% ]';
+
 y0 = [
     zeros(3, 1);
-    phi;
     0;
-    0;
+    -phi;
+    pi / 2;
     v0;
     zeros(3, 1);
 ]';

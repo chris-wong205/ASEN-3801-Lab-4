@@ -42,4 +42,6 @@ function var_dot = QuadrotorEOM(t, var, g, m, I, d, km, nu, mu, motor_forces)
    -cross(angular_velocity, velocity) + (R * [0; 0; g]) + (1 / m) * (drag_force + [0; 0; Zc]);
     I_B \ ( -cross(angular_velocity, I_B * angular_velocity) + drag_moment + [Lc; Mc; Nc] );
   ];
+  
+  var_dot(var_dot < 10e-10) = 0;
 end
