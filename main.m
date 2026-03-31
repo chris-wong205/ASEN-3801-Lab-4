@@ -1,5 +1,5 @@
 clc;
-clear; 
+clear all; 
 close all;
 
 data = load("RSdata_nocontrol.mat");
@@ -27,44 +27,72 @@ f2 = data.rt_motor.signals.values(:,2);
 f3 = data.rt_motor.signals.values(:,3);
 f4 = data.rt_motor.signals.values(:,4);
 
-%% Intial conditions that must be passed in for 1.3
-% motor_forces = [m*g/4;m*g/4;m*g/4;m*g/4];
-% y0 = [0,0,-10,0,0,0,0,0,0,0,0,0]';
+motor_forces = [m*g/4;m*g/4;m*g/4;m*g/4];
+
+% Intial conditions that must be passed in for 1.2 and 1.3
+
+ %y0 = [0,0,-10,0,0,0,0,0,0,0,0,0]';
 
 %% Intial conditions that must be passed in for 1.4
-V_a = 5;
-phi = atan2(V_a^2 * nu, m * g);
 
-R = rotation_matrix([pi / 2, -phi, 0]);
-% R = rotation_matrix([0, 0, phi]);
-v0 = R * [0; 5; 0];
 
-motor_forces = ( (m * g) / (4 * cos(phi)) ) * ones(4, 1);
+phi0 = asin(0.3676/g); % This number was derived by determing the aero force for the IC of 5 and dividing by mg
 
+vE = 5;
+v0 = vE * cos(phi0);
+w0 = - vE * sin(phi0);
 % Define the initial conditions for the ODE
+y0 = [0, 0, -20, phi0, 0, 0, 0, v0, w0, 0, 0, 0]'; %Starts the AC 20 meters up in the air
+
+
+f = (m*g/cos(phi0))/4;
+
+motor_forces = [f,f,f,f]';
+
+
 tspan = [0,10];
-% y0 = [
-%     zeros(3, 1);
-%     phi;
-%     0;
-%     0;
-%     v0;
-%     zeros(3, 1);
-% ]';
+%{
+%% Inital State Vector
 
-y0 = [
-    zeros(3, 1);
-    0;
-    -phi;
-    pi / 2;
-    v0;
-    zeros(3, 1);
-]';
+ 
+[t,y] = ode45(@(t, y) QuadrotorEOM(t, y, g, m, I, d, km, nu, mu, motor_forces),tspan,y0);
 
-fig = 1 : 6;
+time = t;
+aircraft_state_array = y;
+
+control_input_array = [0;0;0;0];
+fig = [1:6];
 col = 'b-';
-control_input_array = [0; 0; 0; 0];
 
-[t, state] = ode45(@(t, y) QuadrotorEOM(t, y, g, m, I, d, km, nu, mu, motor_forces), tspan, y0);
-PlotAircraftSim(t, state, control_input_array, fig, col)
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
 saveAllOpenFigures()
+
+%}
+%% Task 3.3
+
+control_input_array = [0;0;0;0];
+
+tspan = [0,10]; % Simulated over 10 seconds
+
+y0 = [0, 0, -20, 5 * (pi/180), 0, 0, 0, 0, 0, 0, 0, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I),tspan,y0);
+
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+
+
+% Part a
+
+% Part b
+
+% Part c
+
+% Part d
