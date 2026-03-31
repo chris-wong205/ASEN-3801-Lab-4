@@ -70,14 +70,68 @@ saveAllOpenFigures()
 %}
 %% Task 3.3
 
-control_input_array = [0;0;0;0];
+
+% Part a
 
 tspan = [0,10]; % Simulated over 10 seconds
 
 y0 = [0, 0, -20, 5 * (pi/180), 0, 0, 0, 0, 0, 0, 0, 0]';
 
-[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I),tspan,y0);
+[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I), tspan, y0);
 
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+
+close all;
+
+% Part b
+tspan = [0,10]; % Simulated over 10 seconds
+
+y0 = [0, 0, -20, 0,5 * (pi/180), 0, 0, 0, 0, 0, 0, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I), tspan, y0);
+
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
 
 time = t;
 aircraft_state_array = y;
@@ -89,9 +143,6 @@ PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
 saveAllOpenFigures()
 
 
-% Part a
-
-% Part b
 
 % Part c
 

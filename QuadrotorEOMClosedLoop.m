@@ -1,4 +1,4 @@
-function [var_dot,Fc,Gc] = QuadrotorEOMClosedLoop(t, var, g, m, I)
+function [var_dot,Control] = QuadrotorEOMClosedLoop(t, var, g, m, I)
   phi      = var(4);
   theta    = var(5);
   psi      = var(6);
@@ -6,6 +6,8 @@ function [var_dot,Fc,Gc] = QuadrotorEOMClosedLoop(t, var, g, m, I)
   angular_velocity = var(10 : 12);
 
   [Fc, Gc] = InnerLoopFeedback(var);
+
+
 
   R = rotation_matrix([psi, theta, phi]);
   T = [
@@ -23,18 +25,24 @@ function [var_dot,Fc,Gc] = QuadrotorEOMClosedLoop(t, var, g, m, I)
   Mc = Gc(2,1);
   Nc = Gc(3,1);
 
+
+Control.Z = Zc;
+Control.L = Lc;
+Control.M = Mc;
+Control.N = Nc;
+
   %Derivative of State Function
   var_dot = [
-    velocity;
-    angular_velocity;
+    R'* velocity;
+    T'*angular_velocity;
     
-    g * phi;
     -g * theta;
-    (1/m) * Zc;
+    g * phi;
+     0;
     
     1/(Ix) * Lc;
     1/(Iy) * Mc;
-    1/(Iz) * (Nc);];
+    1/(Iz) * (Nc);]
 
-  var_dot(var_dot<10e-10) = 0;
+  
 end
