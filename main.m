@@ -389,11 +389,68 @@ saveAllOpenFigures()
 
 %% 3.5 
 
-%We will be avoiding determining the linear value for K4. 
+
+
+g = 9.81;
 
 Ix = 5.8e-5;
 Iy = 7.2e-5;
-%Linearized Lateral Locus Plot
+
+k3 = linspace(0,1,10000);
+
+Eigenvalues_all = zeros(4, length(k3)); % store eigenvalues
+
+for i = 1:length(k3)
+
+    AclLinearizedLateral = [0, 1, 0, 0;
+                            0, 0, g, 0;
+                            0, 0, 0, 1;
+                            0, -k3(i)/Ix, -40, -22];
+
+    [V, D] = eig(AclLinearizedLateral);
+
+    Eigenvalues_all(:, i) = diag(D); % store eigenvalues
+end
+
+% Root Locus Plot
+figure;
+hold on;
+
+
+for i = 1:length(k3)
+    plot(real(Eigenvalues_all(:,i)), imag(Eigenvalues_all(:,i)), 'b.');
+   
+end
+
+xline(-1 / 1.25, Color="red");
+
+xlabel('Real Axis');
+ylabel('Imaginary Axis');
+title('Lateral Eigenvalue Locus vs k3');
+grid on;
+
+% Postprocessing to find K3
+
+% 1. Identify the 'dominant' (right-most) real part for every k3 iteration
+% We use max() because the eigenvalue with the largest real part limits performance
+%dominant_real_parts = max(real(Eigenvalues_all), [], 1);
+
+% 2. Find where this dominant real part is at its minimum (furthest left)
+[leftmost_sigma, best_idx] = min(real(Eigenvalues_all));
+
+% 3. Retrieve the corresponding k3 value
+fastest_k3 = k3(best_idx);
+
+% Display results
+fprintf('Fastest k3 value: %f\n', fastest_k3);
+fprintf('Leftmost Sigma (Real Part): %f\n', leftmost_sigma);
+
+% Optional: Plot a marker on your figure at this point
+plot(real(Eigenvalues_all(:, best_idx)), imag(Eigenvalues_all(:, best_idx)), ...
+     'ro', 'MarkerSize', 10, 'LineWidth', 2, 'DisplayName', 'Optimal k3');
+
+
+
 
 
 
