@@ -70,14 +70,108 @@ saveAllOpenFigures()
 %}
 %% Task 3.3
 
-control_input_array = [0;0;0;0];
+%{
+% Part a
 
 tspan = [0,10]; % Simulated over 10 seconds
 
 y0 = [0, 0, -20, 5 * (pi/180), 0, 0, 0, 0, 0, 0, 0, 0]';
 
-[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I),tspan,y0);
+[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I), tspan, y0);
 
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+
+%}
+
+%{
+
+% Part b
+tspan = [0,10]; % Simulated over 10 seconds
+
+y0 = [0, 0, -20, 0, 5 * (pi/180), 0, 0, 0, 0, 0, 0, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I), tspan, y0);
+
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+%}
+
+%{
+
+% Part c
+
+tspan = [0,10]; % Simulated over 10 seconds
+
+y0 = [0, 0, -20, 0, 0, 0, 0, 0, 0, 0.1, 0, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I), tspan, y0);
+
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
 
 time = t;
 aircraft_state_array = y;
@@ -89,10 +183,324 @@ PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
 saveAllOpenFigures()
 
 
-% Part a
 
-% Part b
+%}
 
-% Part c
-
+%{
 % Part d
+
+tspan = [0,10]; % Simulated over 10 seconds
+
+y0 = [0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0.1, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMClosedLoop(t, y, g, m, I), tspan, y0);
+
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+%}
+
+
+
+
+%% Part 3.4 Non Linear Model
+
+%% 3.4 a
+%{
+% Part a
+tspan = [0,10]; % Simulated over 10 seconds
+
+%5 degrees in Roll
+
+y0 = [0, 0, -20, 5 * (pi/180), 0, 0, 0, 0, 0, 0, 0, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMNonLinearClosedLoop(t, y, g, m, I, d, km, nu, mu, motor_forces), tspan, y0);
+
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+%}
+
+%% 3.4 b
+%{
+% Part b
+tspan = [0,10]; % Simulated over 10 seconds
+
+%5 degrees in Pitch
+
+y0 = [0, 0, -20, 0, 5 * (pi/180), 0, 0, 0, 0, 0, 0, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMNonLinearClosedLoop(t, y, g, m, I, d, km, nu, mu, motor_forces), tspan, y0);
+
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+%}
+
+%% 3.4 c
+%{
+% Part c
+tspan = [0,10]; % Simulated over 10 seconds
+
+%0.1 rad/s roll
+
+y0 = [0, 0, -20, 0, 0, 0, 0, 0, 0, 0.1, 0, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMNonLinearClosedLoop(t, y, g, m, I, d, km, nu, mu, motor_forces), tspan, y0);
+
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+
+%}
+
+%% 3.4 d
+%{
+% Part d
+tspan = [0,10]; % Simulated over 10 seconds
+
+%0.1 rad/s pitch rate
+
+y0 = [0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0.1, 0]';
+
+[t,y] = ode45(@(t, y) QuadrotorEOMNonLinearClosedLoop(t, y, g, m, I, d, km, nu, mu, motor_forces), tspan, y0);
+
+% Preallocate
+Z_c = zeros(length(t),1);
+L_c = zeros(length(t),1);
+M_c = zeros(length(t),1);
+N_c = zeros(length(t),1);
+
+for i = 1:length(t)
+    [~, Control] = QuadrotorEOMClosedLoop(t(i), y(i,:)', g, m, I);
+    
+    Z_c(i) = Control.Z;
+    L_c(i) = Control.L;
+    M_c(i) = Control.M;
+    N_c(i) = Control.N;
+end
+
+
+control_input_array = [Z_c, L_c, M_c, N_c];
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+
+%}
+%}
+
+%% 3.5 
+
+%Lateral Lotus Plot and Data
+g = 9.81;
+
+Ix = 5.8e-5;
+Iy = 7.2e-5;
+
+k3 = linspace(0,1,10000);
+
+Eigenvalues_all = zeros(4, length(k3)); % store eigenvalues
+
+for i = 1:length(k3)
+
+    AclLinearizedLateral = [0, 1, 0, 0;
+                            0, 0, g, 0;
+                            0, 0, 0, 1;
+                            0, -k3(i)/Ix, -40, -22];
+
+    [V, D] = eig(AclLinearizedLateral);
+
+    Eigenvalues_all(:, i) = diag(D); % store eigenvalues
+end
+
+% Root Locus Plot
+figure;
+hold on;
+
+
+for i = 1:length(k3)
+    plot(real(Eigenvalues_all(:,i)), imag(Eigenvalues_all(:,i)), 'b.');
+   
+end
+
+xline(-1 / 1.25, Color="red");
+
+xlabel('Real Axis');
+ylabel('Imaginary Axis');
+title('Lateral Eigenvalue Locus vs k3');
+grid on;
+
+% Postprocessing to find K3
+
+% 1. Identify the 'dominant' (right-most) real part for every k3 iteration
+% We use max() because the eigenvalue with the largest real part limits performance
+dominant_real_parts = max(real(Eigenvalues_all), [], 1);
+
+% 2. Find where this dominant real part is at its minimum (furthest left)
+[leftmost_sigma, best_idx] = min(dominant_real_parts);
+
+% 3. Retrieve the corresponding k3 value
+fastest_k3 = k3(best_idx);
+
+% Display results
+fprintf('Fastest k3 value: %f\n', fastest_k3);
+fprintf('Leftmost Sigma (Real Part): %f\n', leftmost_sigma);
+
+% Optional: Plot a marker on your figure at this point
+plot(real(Eigenvalues_all(:, best_idx)), imag(Eigenvalues_all(:, best_idx)), ...
+     'ro', 'MarkerSize', 10, 'LineWidth', 2, 'DisplayName', 'Optimal k3');
+
+
+
+
+
+
+
+
+
+%% 3.7 Simulation of Varried Control Lateral and Logitudinal
+
+%To change between longitudinal and lateral simply change the values of Vx
+%and Ux to the correct values
+
+tspan = [0,10]; % Simulated over 10 seconds
+
+
+y0 = [0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0, 0]';
+func = @(t, y) QuadrotorEOMNonLinearOpenLoop(t, y, g, m, I, d, km, nu, mu, motor_forces);
+[t,y] = ode45(func, tspan, y0);
+
+% Preallocate
+
+% 1. Evaluate the EoM over all time steps. 
+
+[~, Control_cells] = cellfun(@(t_val, y_row) func(t_val, y_row'), num2cell(t), num2cell(y, 2), 'UniformOutput', 0);
+
+% 2. Convert the cell array directly into your N x 4 matrix.
+
+control_input_array = cell2mat(Control_cells); 
+
+% Optional: If you still want the individual column vectors for plotting
+Z_c = control_input_array(:, 1);
+L_c = control_input_array(:, 2);
+M_c = control_input_array(:, 3);
+N_c = control_input_array(:, 4);
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
+
+
+
+
+
+
+
+
+
+
+
+

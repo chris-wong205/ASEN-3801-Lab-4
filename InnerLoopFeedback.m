@@ -29,7 +29,7 @@ function [Fc, Gc] = InnerLoopFeedback(var)
     K_p     = k1/Ix;
     K_phi   = k2/Ix;
     K_q     = k3/Iy;
-    K_theta = k4/Ix;
+    K_theta = k4/Iy;
     
     
     
@@ -39,9 +39,9 @@ function [Fc, Gc] = InnerLoopFeedback(var)
 
     %% 3. Extract States from 12x1 Vector
     
-    phi   = var(7);
-    theta = var(8);
-    psi   = var(9);  
+    phi   = var(4);
+    theta = var(5);
+    psi   = var(6);  
     
     p = var(10);
     q = var(11);
@@ -60,8 +60,8 @@ function [Fc, Gc] = InnerLoopFeedback(var)
     % Apply the control laws: u_norm = -K_angle*angle - K_rate*rate
     % Then convert normalized angular acceleration to physical torque: Torque = I * u_norm
     
-    L_c = (- K_p * p -K_phi * phi);
-    M_c = (- K_q * q -K_theta * theta);
+    L_c = (- k1 * p -k2 * phi);
+    M_c = (- k3 * q -k4 * theta);
     N_c = (-K_r * r); 
 
     Gc = [L_c; M_c; N_c];
