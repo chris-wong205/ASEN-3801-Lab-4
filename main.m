@@ -396,7 +396,9 @@ g = 9.81;
 Ix = 5.8e-5;
 Iy = 7.2e-5;
 
-k3 = linspace(0,1,10000);
+k3 = [linspace(0, 1e-5, 501), linspace(1e-5,1e-3,1000), linspace(1e-3, 1, 501)];
+k3(501)  = [];
+k3(1001) = [];
 
 Eigenvalues_all = zeros(4, length(k3)); % store eigenvalues
 
@@ -412,14 +414,28 @@ for i = 1:length(k3)
     Eigenvalues_all(:, i) = diag(D); % store eigenvalues
 end
 
+sigma_max                = -1 / 1.25;
+eig_real                 = real(Eigenvalues_all);
+eig_im                   = imag(Eigenvalues_all);
+eig_diff                 = eig_real - sigma_max;
+eig_discard              = any( and(eig_real ~= 0, or(eig_diff > 0, eig_im ~= 0)), 1 );
+eig_diff(:, eig_discard) = inf;
+[~, eig_diff_min]        = min(abs(eig_diff), [], "all");
+[~, eig_diff_min_col]    = ind2sub(size(Eigenvalues_all), eig_diff_min);
+k3_min                   = k3(eig_diff_min_col);
+
 % Root Locus Plot
+colors = [
+    linspace(0, 1, length(k3))', ...
+    linspace(1, 0, length(k3))', ...
+    zeros(length(k3), 1)
+];
+
 figure;
 hold on;
 
-
 for i = 1:length(k3)
-    plot(real(Eigenvalues_all(:,i)), imag(Eigenvalues_all(:,i)), 'b.');
-   
+    scatter(real(Eigenvalues_all(:,i)), imag(Eigenvalues_all(:,i)), 2, colors(i, :));
 end
 
 xline(-1 / 1.25, Color="red");
@@ -428,31 +444,6 @@ xlabel('Real Axis');
 ylabel('Imaginary Axis');
 title('Lateral Eigenvalue Locus vs k3');
 grid on;
-
-% Postprocessing to find K3
-
-% 1. Identify the 'dominant' (right-most) real part for every k3 iteration
-% We use max() because the eigenvalue with the largest real part limits performance
-%dominant_real_parts = max(real(Eigenvalues_all), [], 1);
-
-% 2. Find where this dominant real part is at its minimum (furthest left)
-[leftmost_sigma, best_idx] = min(real(Eigenvalues_all));
-
-% 3. Retrieve the corresponding k3 value
-fastest_k3 = k3(best_idx);
-
-% Display results
-fprintf('Fastest k3 value: %f\n', fastest_k3);
-fprintf('Leftmost Sigma (Real Part): %f\n', leftmost_sigma);
-
-% Optional: Plot a marker on your figure at this point
-plot(real(Eigenvalues_all(:, best_idx)), imag(Eigenvalues_all(:, best_idx)), ...
-     'ro', 'MarkerSize', 10, 'LineWidth', 2, 'DisplayName', 'Optimal k3');
-
-
-
-
-
 
 %Linearized Longitudinal
 
