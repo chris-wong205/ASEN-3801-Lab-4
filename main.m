@@ -461,7 +461,6 @@ grid on;
 
 %% 3.7 Simulation of Varried Control Lateral and Logitudinal
 
-%{
 %To change between longitudinal and lateral simply change the values of Vx
 %and Ux to the correct values
 
@@ -496,4 +495,3 @@ col = 'b-';
 
 PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
 saveAllOpenFigures()
-%}
