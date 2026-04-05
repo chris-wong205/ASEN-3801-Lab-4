@@ -388,9 +388,7 @@ saveAllOpenFigures()
 %}
 
 %% 3.5 
-
-
-
+%Lateral Lotus Plot and Data
 g = 9.81;
 
 Ix = 5.8e-5;
@@ -398,7 +396,6 @@ Iy = 7.2e-5;
 
 k3 = [linspace(0, 1e-5, 501), linspace(1e-5,1e-3,1000), linspace(1e-3, 1, 501)];
 k3(501)  = [];
-k3(1001) = [];
 
 Eigenvalues_all = zeros(4, length(k3)); % store eigenvalues
 
@@ -437,6 +434,9 @@ hold on;
 for i = 1:length(k3)
     scatter(real(Eigenvalues_all(:,i)), imag(Eigenvalues_all(:,i)), 2, colors(i, :));
 end
+% Root Locus Plot
+figure;
+hold on;
 
 xline(-1 / 1.25, Color="red");
 
@@ -445,8 +445,40 @@ ylabel('Imaginary Axis');
 title('Lateral Eigenvalue Locus vs k3');
 grid on;
 
-%Linearized Longitudinal
+
+%% 3.7 Simulation of Varried Control Lateral and Logitudinal
+
+%To change between longitudinal and lateral simply change the values of Vx
+%and Ux to the correct values
+
+tspan = [0,10]; % Simulated over 10 seconds
 
 
+y0 = [0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0, 0]';
+func = @(t, y) QuadrotorEOMNonLinearOpenLoop(t, y, g, m, I, d, km, nu, mu, motor_forces);
+[t,y] = ode45(func, tspan, y0);
 
+% Preallocate
 
+% 1. Evaluate the EoM over all time steps. 
+
+[~, Control_cells] = cellfun(@(t_val, y_row) func(t_val, y_row'), num2cell(t), num2cell(y, 2), 'UniformOutput', 0);
+
+% 2. Convert the cell array directly into your N x 4 matrix.
+
+control_input_array = cell2mat(Control_cells); 
+
+% Optional: If you still want the individual column vectors for plotting
+Z_c = control_input_array(:, 1);
+L_c = control_input_array(:, 2);
+M_c = control_input_array(:, 3);
+N_c = control_input_array(:, 4);
+
+time = t;
+aircraft_state_array = y;
+
+fig = [1:6];
+col = 'b-';
+
+PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+saveAllOpenFigures()
