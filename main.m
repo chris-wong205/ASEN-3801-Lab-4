@@ -388,55 +388,36 @@ saveAllOpenFigures()
 %}
 
 %% 3.5 
-%Lateral Lotus Plot and Data
+%Lateral Locus Plot and Data
 g = 9.81;
 
 Ix = 5.8e-5;
 Iy = 7.2e-5;
 
-k3 = [linspace(0, 1e-5, 501), linspace(1e-5,1e-3,1000), linspace(1e-3, 1, 501)];
-k3(501)  = [];
+lateral_k3       = [linspace(0, 1e-5, 501), linspace(1e-5,1e-3,1000), linspace(1e-3, 1, 501)];
+lateral_k3(501)  = [];
+lateral_k3(1001) = [];
+lateral_k3_len   = length(lateral_k3);
 
-Eigenvalues_all = zeros(4, length(k3)); % store eigenvalues
-
-for i = 1:length(k3)
-
-    AclLinearizedLateral = [0, 1, 0, 0;
-                            0, 0, g, 0;
-                            0, 0, 0, 1;
-                            0, -k3(i)/Ix, -40, -22];
-
-    [V, D] = eig(AclLinearizedLateral);
-
-    Eigenvalues_all(:, i) = diag(D); % store eigenvalues
-end
-
-sigma_max                = -1 / 1.25;
-eig_real                 = real(Eigenvalues_all);
-eig_im                   = imag(Eigenvalues_all);
-eig_diff                 = eig_real - sigma_max;
-eig_discard              = any( and(eig_real ~= 0, or(eig_diff > 0, eig_im ~= 0)), 1 );
-eig_diff(:, eig_discard) = inf;
-[~, eig_diff_min]        = min(abs(eig_diff), [], "all");
-[~, eig_diff_min_col]    = ind2sub(size(Eigenvalues_all), eig_diff_min);
-k3_min                   = k3(eig_diff_min_col);
+AclLinearizedLateral = @(k3) [0, 1, 0, 0;
+                              0, 0, g, 0;
+                              0, 0, 0, 1;
+                              0, -k3/Ix, -40, -22];
+[lateral_k3_min, lateral_eigenvalues] = k3_min(AclLinearizedLateral, length(AclLinearizedLateral(0)), lateral_k3);
 
 % Root Locus Plot
 colors = [
-    linspace(0, 1, length(k3))', ...
-    linspace(1, 0, length(k3))', ...
-    zeros(length(k3), 1)
+    linspace(0, 1, lateral_k3_len)', ...
+    linspace(1, 0, lateral_k3_len)', ...
+    zeros(lateral_k3_len, 1)
 ];
 
 figure;
 hold on;
 
-for i = 1:length(k3)
-    scatter(real(Eigenvalues_all(:,i)), imag(Eigenvalues_all(:,i)), 2, colors(i, :));
+for i = 1 : lateral_k3_len
+    scatter(real(lateral_eigenvalues(:,i)), imag(lateral_eigenvalues(:,i)), 2, colors(i, :));
 end
-% Root Locus Plot
-figure;
-hold on;
 
 xline(-1 / 1.25, Color="red");
 
@@ -445,9 +426,42 @@ ylabel('Imaginary Axis');
 title('Lateral Eigenvalue Locus vs k3');
 grid on;
 
+% Logitudinal Locus Plot and Data
+longitudinal_k3 = [linspace(-1, -1e-3, 501), linspace(-1e-3, -1e-5, 1000), linspace(-1e-5, 0, 501)];
+longitudinal_k3(501) = [];
+longitudinal_k3(1001) = [];
+longitudinal_k3_len = length(longitudinal_k3);
+
+AclLinearizedLongitudinal = @(k3) [0, 1,       0,   0;
+                                   0, 0,      -g,   0;
+                                   0, 0,       0,   1;
+                                   0, -k3/Iy, -40, -22];
+[longitudinal_k3_min, longitudinal_eigenvalues] = k3_min(AclLinearizedLongitudinal, length(AclLinearizedLongitudinal(0)), longitudinal_k3);
+
+% Root Locus Plot
+colors = [
+    linspace(0, 1, longitudinal_k3_len)', ...
+    linspace(1, 0, longitudinal_k3_len)', ...
+    zeros(longitudinal_k3_len, 1)
+];
+
+figure;
+hold on;
+
+for i = 1 : longitudinal_k3_len
+    scatter(real(longitudinal_eigenvalues(:,i)), imag(longitudinal_eigenvalues(:,i)), 2, colors(i, :));
+end
+
+xline(-1 / 1.25, Color="red");
+
+xlabel('Real Axis');
+ylabel('Imaginary Axis');
+title('Logitudinal Eigenvalue Locus vs k3');
+grid on;
 
 %% 3.7 Simulation of Varried Control Lateral and Logitudinal
 
+%{
 %To change between longitudinal and lateral simply change the values of Vx
 %and Ux to the correct values
 
@@ -482,3 +496,4 @@ col = 'b-';
 
 PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
 saveAllOpenFigures()
+%}
