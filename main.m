@@ -394,7 +394,7 @@ g = 9.81;
 Ix = 5.8e-5;
 Iy = 7.2e-5;
 
-lateral_k3       = [linspace(0, 1e-5, 501), linspace(1e-5,1e-3,1000), linspace(1e-3, 1, 501)];
+lateral_k3       = [linspace(0, 1e-5, 501), linspace(1e-5,1e-3,1000), linspace(1e-3, 1, 501)]';
 lateral_k3(501)  = [];
 lateral_k3(1001) = [];
 lateral_k3_len   = length(lateral_k3);
@@ -406,28 +406,40 @@ AclLinearizedLateral = @(k3) [0, 1, 0, 0;
 [lateral_k3_min, lateral_eigenvalues] = k3_min(AclLinearizedLateral, length(AclLinearizedLateral(0)), lateral_k3);
 
 % Root Locus Plot
-colors = [
-    linspace(0, 1, lateral_k3_len)', ...
-    linspace(1, 0, lateral_k3_len)', ...
-    zeros(lateral_k3_len, 1)
+colors = [ 
+    0, 0, 0, 1;
+    1, 1, 0, 1;
+];
+
+lateral_k3_transformed = gradient_transform(lateral_k3, 0.2);
+
+lateral_colors = [
+    interp1(colors(:, 1), colors(:, 2), lateral_k3_transformed), ... 
+    interp1(colors(:, 1), colors(:, 3), lateral_k3_transformed), ...
+    interp1(colors(:, 1), colors(:, 4), lateral_k3_transformed)
 ];
 
 figure;
 hold on;
 
+colormap(lateral_colors);
+
 for i = 1 : lateral_k3_len
-    scatter(real(lateral_eigenvalues(:,i)), imag(lateral_eigenvalues(:,i)), 2, colors(i, :));
+    scatter(real(lateral_eigenvalues(:,i)), imag(lateral_eigenvalues(:,i)), 2, lateral_colors(i, :));
 end
+
+cb = colorbar();
+cb.Label.String = "k3";
 
 xline(-1 / 1.25, Color="red");
 
 xlabel('Real Axis');
 ylabel('Imaginary Axis');
-title('Lateral Eigenvalue Locus vs k3');
+title('Lateral Eigenvalue Locus');
 grid on;
 
 % Logitudinal Locus Plot and Data
-longitudinal_k3 = [linspace(-1, -1e-3, 501), linspace(-1e-3, -1e-5, 1000), linspace(-1e-5, 0, 501)];
+longitudinal_k3 = [linspace(-1, -1e-3, 501), linspace(-1e-3, -1e-5, 1000), linspace(-1e-5, 0, 501)]';
 longitudinal_k3(501) = [];
 longitudinal_k3(1001) = [];
 longitudinal_k3_len = length(longitudinal_k3);
@@ -439,24 +451,32 @@ AclLinearizedLongitudinal = @(k3) [0, 1,       0,   0;
 [longitudinal_k3_min, longitudinal_eigenvalues] = k3_min(AclLinearizedLongitudinal, length(AclLinearizedLongitudinal(0)), longitudinal_k3);
 
 % Root Locus Plot
-colors = [
-    linspace(0, 1, longitudinal_k3_len)', ...
-    linspace(1, 0, longitudinal_k3_len)', ...
-    zeros(longitudinal_k3_len, 1)
+longitudinal_k3_transformed = gradient_transform(longitudinal_k3, 0.2);
+
+longitudinal_colors = [
+    interp1(colors(:, 1), colors(:, 2), longitudinal_k3_transformed), ...
+    interp1(colors(:, 1), colors(:, 3), longitudinal_k3_transformed), ...
+    interp1(colors(:, 1), colors(:, 4), longitudinal_k3_transformed)
 ];
 
 figure;
 hold on;
 
+colormap(longitudinal_colors);
+
 for i = 1 : longitudinal_k3_len
-    scatter(real(longitudinal_eigenvalues(:,i)), imag(longitudinal_eigenvalues(:,i)), 2, colors(i, :));
+    scatter(real(longitudinal_eigenvalues(:,i)), imag(longitudinal_eigenvalues(:,i)), 2, longitudinal_colors(i, :));
 end
+
+cb = colorbar();
+cb.Label.String = "k3";
+clim([min(longitudinal_k3), max(longitudinal_k3)]);
 
 xline(-1 / 1.25, Color="red");
 
 xlabel('Real Axis');
 ylabel('Imaginary Axis');
-title('Logitudinal Eigenvalue Locus vs k3');
+title('Longitudinal Eigenvalue Locus');
 grid on;
 
 %% 3.7 Simulation of Varried Control Lateral and Logitudinal
@@ -464,34 +484,34 @@ grid on;
 %To change between longitudinal and lateral simply change the values of Vx
 %and Ux to the correct values
 
-tspan = [0,10]; % Simulated over 10 seconds
-
-
-y0 = [0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0, 0]';
-func = @(t, y) QuadrotorEOMNonLinearOpenLoop(t, y, g, m, I, d, km, nu, mu, motor_forces);
-[t,y] = ode45(func, tspan, y0);
-
-% Preallocate
-
-% 1. Evaluate the EoM over all time steps. 
-
-[~, Control_cells] = cellfun(@(t_val, y_row) func(t_val, y_row'), num2cell(t), num2cell(y, 2), 'UniformOutput', 0);
-
-% 2. Convert the cell array directly into your N x 4 matrix.
-
-control_input_array = cell2mat(Control_cells); 
-
-% Optional: If you still want the individual column vectors for plotting
-Z_c = control_input_array(:, 1);
-L_c = control_input_array(:, 2);
-M_c = control_input_array(:, 3);
-N_c = control_input_array(:, 4);
-
-time = t;
-aircraft_state_array = y;
-
-fig = [1:6];
-col = 'b-';
-
-PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
-saveAllOpenFigures()
+% tspan = [0,10]; % Simulated over 10 seconds
+%
+%
+% y0 = [0, 0, -20, 0, 0, 0, 0, 0, 0, 0, 0, 0]';
+% func = @(t, y) QuadrotorEOMNonLinearOpenLoop(t, y, g, m, I, d, km, nu, mu, motor_forces);
+% [t,y] = ode45(func, tspan, y0);
+%
+% % Preallocate
+%
+% % 1. Evaluate the EoM over all time steps. 
+%
+% [~, Control_cells] = cellfun(@(t_val, y_row) func(t_val, y_row'), num2cell(t), num2cell(y, 2), 'UniformOutput', 0);
+%
+% % 2. Convert the cell array directly into your N x 4 matrix.
+%
+% control_input_array = cell2mat(Control_cells); 
+%
+% % Optional: If you still want the individual column vectors for plotting
+% Z_c = control_input_array(:, 1);
+% L_c = control_input_array(:, 2);
+% M_c = control_input_array(:, 3);
+% N_c = control_input_array(:, 4);
+%
+% time = t;
+% aircraft_state_array = y;
+%
+% fig = [1:6];
+% col = 'b-';
+%
+% PlotAircraftSim(time, aircraft_state_array, control_input_array, fig, col)
+% saveAllOpenFigures()
